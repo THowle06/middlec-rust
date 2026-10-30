@@ -1,6 +1,8 @@
 mod ast;
 mod parser;
+mod symbol;
 mod token;
+mod typecheck;
 
 use logos::Logos;
 use std::env;
@@ -8,6 +10,8 @@ use std::fs;
 use token::Token;
 
 use crate::parser::Parser;
+use crate::symbol::SymbolTable;
+use crate::typecheck::TypeChecker;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -41,12 +45,28 @@ fn main() {
     }
 
     let mut parser = Parser::new(tokens);
-    match parser.parse_program() {
-        Ok(ast) => {
-            println!("AST successfully constructed:\n{:#?}", ast);
+    let ast = match parser.parse_program() {
+        Ok(tree) => tree,
+        Err(err) => {
+            eprint!("Parse error: {}", err);
+            std::process::exit(1);
+        }
+    };
+
+    println!("AST successfully constructed.");
+
+    let mut symbols = SymbolTable::new();
+    let mut checker = TypeChecker::new(&mut symbols);
+    match checker.check_program(&ast) {
+        Ok(()) => {
+            println!("Type checking successful: zero semantic errors.");
+            println!(
+                "Local stack footprint: {} bytes",
+                symbols.total_stack_bytes()
+            );
         }
         Err(err) => {
-            eprintln!("Parse error: {}", err);
+            eprintln!("Semantic Error: {}", err);
             std::process::exit(1);
         }
     }

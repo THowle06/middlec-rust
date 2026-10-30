@@ -1,10 +1,13 @@
 mod ast;
+mod parser;
 mod token;
 
 use logos::Logos;
 use std::env;
 use std::fs;
 use token::Token;
+
+use crate::parser::Parser;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -20,11 +23,31 @@ fn main() {
     });
 
     let mut lexer = Token::lexer(&source);
-    println!("Scanning tokens from {}", input_path);
+    let mut tokens = Vec::new();
+    let mut had_lex_error = false;
+
     while let Some(tok_res) = lexer.next() {
         match tok_res {
-            Ok(tok) => println!("  {:?} ({:?})", tok, lexer.slice()),
-            Err(_) => println!("  Lexing error at: {:?}", lexer.slice()),
+            Ok(tok) => tokens.push(tok),
+            Err(_) => {
+                eprintln!("Lexical error at token slice: {:?}", lexer.slice());
+                had_lex_error = true;
+            }
+        }
+    }
+
+    if had_lex_error {
+        std::process::exit(1);
+    }
+
+    let mut parser = Parser::new(tokens);
+    match parser.parse_program() {
+        Ok(ast) => {
+            println!("AST successfully constructed:\n{:#?}", ast);
+        }
+        Err(err) => {
+            eprintln!("Parse error: {}", err);
+            std::process::exit(1);
         }
     }
 }

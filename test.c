@@ -1,7 +1,20 @@
 void main()
 {
-    int x = 10;
-    int y = 20;
-    int sum = x + y;
-    putint(sum);
+    int sum = 0;
+    int i = 0;
+
+    while (i <= 5)
+    {
+        sum = sum + i;
+        i = i + 1;
+    }
+
+    if (sum == 15)
+    {
+        putint(sum);
+    }
+    else
+    {
+        putint(0);
+    }
 }

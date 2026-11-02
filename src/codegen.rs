@@ -1,11 +1,7 @@
 use crate::ast::*;
-use crate::iloc::IlocOp::LoadLabel;
 use crate::iloc::{IlocOp, IlocProgram, Reg};
 use crate::symbol::SymbolTable;
 use std::collections::HashMap;
-use std::collections::btree_map::Values;
-use std::hash::Hash;
-use std::slice::RChunks;
 
 pub struct CodeGen {
     program: IlocProgram,

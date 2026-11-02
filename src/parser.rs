@@ -168,6 +168,14 @@ impl Parser {
                     else_branch,
                 })
             }
+            Some(Token::KwWhile) => {
+                self.advance();
+                self.expect(Token::LParen)?;
+                let cond = self.parse_expr(0)?;
+                self.expect(Token::RParen)?;
+                let body = Box::new(self.parse_stmt()?);
+                Ok(Stmt::While { cond, body })
+            }
             Some(Token::KwReturn) => {
                 self.advance();
                 let expr = if !self.check(&Token::Semi) {
